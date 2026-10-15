@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python 程序执行界面</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .shared-params {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .shared-params h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .param-input {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .param-input input {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .param-input button {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .param-input button:hover {
+            background: #5568d3;
+        }
+
+        .param-list {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .tasks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .task-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+
+        .task-card:hover {
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .task-card h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .task-info {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .task-params {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-size: 13px;
+        }
+
+        .task-button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 10px;
+            transition: all 0.3s;
+        }
+
+        .task-button:hover {
+            transform: scale(1.02);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .task-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .task-status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .status-not_started {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .status-running {
+            background: #fff3e0;
+            color: #f57c00;
+            animation: pulse 1.5s infinite;
+        }
+
+        .status-completed {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .status-failed {
+            background: #ffebee;
+            color: #d32f2f;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .task-output {
+            margin-top: 10px;
+            padding: 10px;
+            background: #263238;
+            color: #aed581;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        .config-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .config-section h2 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .config-button {
+            padding: 10px 20px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .config-button:hover {
+            background: #218838;
+        }
+
+        .edit-params-btn, .save-params-btn, .cancel-params-btn {
+            padding: 4px 10px;
+            font-size: 12px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            margin: 2px;
+        }
+
+        .edit-params-btn {
+            background: #17a2b8;
+            color: white;
+            float: right;
+        }
+
+        .edit-params-btn:hover {
+            background: #138496;
+        }
+
+        .save-params-btn {
+            background: #28a745;
+            color: white;
+        }
+
+        .save-params-btn:hover {
+            background: #218838;
+        }
+
+        .cancel-params-btn {
+            background: #6c757d;
+            color: white;
+        }
+
+        .cancel-params-btn:hover {
+            background: #5a6268;
+        }
+
+        .param-edit-input {
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Python 程序执行界面</h1>
+            <p>配置并运行你的 Python 程序</p>
+        </div>
+
+        <div class="content">
+            <!-- 共享参数区域 -->
+            <div class="shared-params">
+                <h2>📋 共享参数 
+                    <button class="edit-params-btn" onclick="toggleEditSharedParams()" style="float: right;">✏️ 编辑</button>
+                </h2>
+                
+                <!-- 显示模式 -->
+                <div id="shared-params-display">
+                    <div class="param-list" id="shared-params-list">
+                        当前共享参数: 无
+                    </div>
+                </div>
+                
+                <!-- 编辑模式 -->
+                <div id="shared-params-edit" style="display: none;">
+                    <div id="shared-params-inputs"></div>
+                    <div class="param-input" style="margin-top: 10px;">
+                        <input type="text" id="new-param-key" placeholder="新参数名">
+                        <input type="text" id="new-param-value" placeholder="新参数值">
+                        <button onclick="addNewSharedParam()">➕ 添加</button>
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <button class="save-params-btn" onclick="saveSharedParams()">💾 保存到配置</button>
+                        <button class="cancel-params-btn" onclick="toggleEditSharedParams()">❌ 取消</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 任务卡片区域 -->
+            <div class="tasks-grid" id="tasks-grid">
+                {% for task in config.tasks %}
+                <div class="task-card" id="card-{{ task.id }}">
+                    <h3>{{ task.name }}</h3>
+                    <div class="task-info">
+                        <strong>脚本:</strong> {{ task.script }}
+                        <span style="background: #667eea; color: white; padding: 2px 8px; border-radius: 3px; font-size: 11px; margin-left: 5px;">
+                            {{ task.script_type|default('python')|upper }}
+                        </span>
+                    </div>
+                    <div class="task-params">
+                        <strong>参数:</strong> <button class="edit-params-btn" onclick="toggleEditParams('{{ task.id }}')">✏️ 编辑</button>
+                        <div id="params-display-{{ task.id }}">
+                            {% for key, value in task.params.items() %}
+                            {{ key }}: {{ value }}<br>
+                            {% endfor %}
+                        </div>
+                        <div id="params-edit-{{ task.id }}" style="display: none;">
+                            {% for key, value in task.params.items() %}
+                            <div style="margin: 5px 0;">
+                                <label style="display: inline-block; width: 120px; font-size: 12px;">{{ key }}:</label>
+                                <input type="text" 
+                                       class="param-edit-input" 
+                                       data-param-key="{{ key }}"
+                                       value="{{ value }}" 
+                                       style="width: calc(100% - 130px); padding: 4px; border: 1px solid #ddd; border-radius: 3px; font-size: 12px;">
+                            </div>
+                            {% endfor %}
+                            <button class="save-params-btn" onclick="saveParams('{{ task.id }}')">💾 保存</button>
+                            <button class="cancel-params-btn" onclick="toggleEditParams('{{ task.id }}')">❌ 取消</button>
+                        </div>
+                    </div>
+                    {% if task.next_task %}
+                    <div class="task-info">
+                        <strong>下一个任务:</strong> {{ task.next_task }}
+                    </div>
+                    {% endif %}
+                    <button class="task-button" 
+                            data-task-id="{{ task.id }}"
+                            data-script="{{ task.script }}"
+                            data-params='{{ task.params|tojson }}'
+                            data-next-task="{{ task.next_task or '' }}"
+                            data-script-type="{{ task.script_type|default('python') }}"
+                            data-use-shared-params='{{ task.use_shared_params|default([])|tojson }}'
+                            onclick="runTaskFromButton(this)">
+                        运行任务
+                    </button>
+                    <div class="task-status status-not_started" id="status-{{ task.id }}">
+                        状态: 未开始
+                    </div>
+                    <div class="task-output" id="output-{{ task.id }}" style="display: none;">
+                        <div style="color: #81c784; margin-bottom: 5px;">📋 输出:</div>
+                        <div id="output-content-{{ task.id }}"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- 配置区域 -->
+            <div class="config-section">
+                <h2>⚙️ 配置管理</h2>
+                <button class="config-button" onclick="showConfig()">查看配置</button>
+                <button class="config-button" onclick="location.reload()">刷新页面</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let sharedParams = {};
+        let editingSharedParams = {};
+
+        // 加载共享参数
+        async function loadSharedParams() {
+            const response = await fetch('/api/shared_params');
+            sharedParams = await response.json();
+            updateSharedParamsList();
+        }
+
+        // 更新共享参数显示
+        function updateSharedParamsList() {
+            const list = document.getElementById('shared-params-list');
+            if (Object.keys(sharedParams).length === 0) {
+                list.innerHTML = '<em style="color: #999;">当前共享参数: 无</em>';
+            } else {
+                list.innerHTML = '<strong>当前共享参数:</strong><br>' + 
+                    Object.entries(sharedParams).map(([k, v]) => 
+                        `<div style="padding: 5px; background: white; margin: 3px 0; border-radius: 3px;">
+                            <strong>${k}</strong>: ${v}
+                        </div>`
+                    ).join('');
+            }
+        }
+
+        // 切换共享参数编辑模式
+        function toggleEditSharedParams() {
+            const displayDiv = document.getElementById('shared-params-display');
+            const editDiv = document.getElementById('shared-params-edit');
+            
+            if (editDiv.style.display === 'none') {
+                // 进入编辑模式
+                editingSharedParams = {...sharedParams};
+                renderSharedParamsEdit();
+                displayDiv.style.display = 'none';
+                editDiv.style.display = 'block';
+            } else {
+                // 退出编辑模式
+                displayDiv.style.display = 'block';
+                editDiv.style.display = 'none';
+            }
+        }
+
+        // 渲染共享参数编辑界面
+        function renderSharedParamsEdit() {
+            const container = document.getElementById('shared-params-inputs');
+            container.innerHTML = Object.entries(editingSharedParams).map(([key, value]) => `
+                <div style="margin: 8px 0; display: flex; gap: 10px; align-items: center;">
+                    <input type="text" 
+                           value="${key}" 
+                           data-old-key="${key}"
+                           class="shared-param-key"
+                           style="flex: 1; padding: 8px; border: 2px solid #ddd; border-radius: 5px; font-size: 14px;">
+                    <input type="text" 
+                           value="${value}" 
+                           class="shared-param-value"
+                           style="flex: 2; padding: 8px; border: 2px solid #ddd; border-radius: 5px; font-size: 14px;">
+                    <button onclick="removeSharedParam('${key}')" 
+                            style="padding: 8px 12px; background: #dc3545; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                        🗑️
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // 添加新的共享参数
+        function addNewSharedParam() {
+            const key = document.getElementById('new-param-key').value.trim();
+            const value = document.getElementById('new-param-value').value.trim();
+            
+            if (!key || !value) {
+                alert('请输入参数名和参数值');
+                return;
+            }
+
+            if (editingSharedParams[key]) {
+                alert('参数名已存在！');
+                return;
+            }
+
+            editingSharedParams[key] = value;
+            renderSharedParamsEdit();
+
+            document.getElementById('new-param-key').value = '';
+            document.getElementById('new-param-value').value = '';
+        }
+
+        // 删除共享参数
+        function removeSharedParam(key) {
+            if (confirm(`确定要删除参数 "${key}" 吗？`)) {
+                delete editingSharedParams[key];
+                renderSharedParamsEdit();
+            }
+        }
+
+        // 保存共享参数到配置文件
+        async function saveSharedParams() {
+            // 收集当前编辑的参数
+            const container = document.getElementById('shared-params-inputs');
+            const keyInputs = container.querySelectorAll('.shared-param-key');
+            const valueInputs = container.querySelectorAll('.shared-param-value');
+            
+            const newParams = {};
+            keyInputs.forEach((keyInput, index) => {
+                const key = keyInput.value.trim();
+                const value = valueInputs[index].value.trim();
+                if (key && value) {
+                    newParams[key] = value;
+                }
+            });
+
+            try {
+                // 更新内存中的共享参数
+                const response = await fetch('/api/shared_params', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(newParams)
+                });
+
+                const result = await response.json();
+                sharedParams = result.params;
+
+                // 同时保存到配置文件
+                const configResponse = await fetch('/api/config');
+                const config = await configResponse.json();
+                config.shared_params = newParams;
+
+                await fetch('/api/config', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(config)
+                });
+
+                updateSharedParamsList();
+                toggleEditSharedParams();
+                alert('✓ 共享参数已保存到配置文件！');
+            } catch (error) {
+                console.error('保存共享参数失败:', error);
+                alert('✗ 保存失败: ' + error.message);
+            }
+        }
+
+        // 从按钮运行任务
+        function runTaskFromButton(button) {
+            const taskId = button.getAttribute('data-task-id');
+            const script = button.getAttribute('data-script');
+            const params = JSON.parse(button.getAttribute('data-params'));
+            const nextTask = button.getAttribute('data-next-task');
+            const scriptType = button.getAttribute('data-script-type');
+            const useSharedParams = JSON.parse(button.getAttribute('data-use-shared-params') || '[]');
+            
+            runTask(taskId, script, params, nextTask, scriptType, useSharedParams, button);
+        }
+
+        // 运行任务
+        async function runTask(taskId, script, params, nextTask, scriptType = 'python', useSharedParams = [], button = null) {
+            try {
+                if (!button) {
+                    button = document.querySelector(`[data-task-id="${taskId}"]`);
+                }
+                
+                button.disabled = true;
+                button.textContent = '运行中...';
+
+                console.log('运行任务:', {taskId, script, params, scriptType, useSharedParams});
+
+                const requestBody = {
+                    task_id: taskId, 
+                    script: script, 
+                    params: params,
+                    script_type: scriptType
+                };
+                
+                // 如果指定了 use_shared_params，添加到请求中
+                if (useSharedParams && useSharedParams.length > 0) {
+                    requestBody.use_shared_params = useSharedParams;
+                }
+
+                const response = await fetch('/api/run_task', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(requestBody)
+                });
+
+                const result = await response.json();
+                console.log('任务启动结果:', result);
+
+                if (!result.success) {
+                    alert('任务启动失败: ' + result.message);
+                    button.disabled = false;
+                    button.textContent = '运行任务';
+                    return;
+                }
+
+                // 开始轮询任务状态
+                pollTaskStatus(taskId, nextTask);
+            } catch (error) {
+                console.error('运行任务出错:', error);
+                alert('运行任务出错: ' + error.message);
+                if (button) {
+                    button.disabled = false;
+                    button.textContent = '运行任务';
+                }
+            }
+        }
+
+        // 轮询任务状态
+        async function pollTaskStatus(taskId, nextTask) {
+            const statusDiv = document.getElementById(`status-${taskId}`);
+            const outputDiv = document.getElementById(`output-${taskId}`);
+            const outputContent = document.getElementById(`output-content-${taskId}`);
+            const button = document.querySelector(`#card-${taskId} .task-button`);
+
+            // 立即显示输出区域
+            outputDiv.style.display = 'block';
+            if (outputContent) {
+                outputContent.textContent = '⏳ 等待输出...';
+            }
+
+            const interval = setInterval(async () => {
+                try {
+                    const response = await fetch(`/api/task_status/${taskId}`);
+                    const status = await response.json();
+
+                    statusDiv.className = `task-status status-${status.status}`;
+                    
+                    if (status.status === 'running') {
+                        statusDiv.textContent = `状态: 运行中... (开始时间: ${status.start_time})`;
+                        // 实时更新输出
+                        if (status.output) {
+                            if (outputContent) {
+                                outputContent.textContent = status.output;
+                            } else {
+                                outputDiv.textContent = status.output;
+                            }
+                            // 自动滚动到底部
+                            outputDiv.scrollTop = outputDiv.scrollHeight;
+                        }
+                    } else if (status.status === 'completed') {
+                        statusDiv.textContent = `状态: 完成 ✓ (结束时间: ${status.end_time})`;
+                        if (outputContent) {
+                            outputContent.textContent = status.output || '(无输出)';
+                        } else {
+                            outputDiv.textContent = status.output || '(无输出)';
+                        }
+                        outputDiv.scrollTop = outputDiv.scrollHeight;
+                        button.disabled = false;
+                        button.textContent = '重新运行';
+                        clearInterval(interval);
+
+                        // 如果有下一个任务，启用下一个任务按钮
+                        if (nextTask) {
+                            enableNextTask(nextTask);
+                        }
+                    } else if (status.status === 'failed') {
+                        statusDiv.textContent = `状态: 失败 ✗ (结束时间: ${status.end_time})`;
+                        const errorText = status.error || '未知错误';
+                        const outputText = status.output || '';
+                        const fullOutput = outputText + (outputText && errorText ? '\n\n❌ 错误:\n' : '❌ 错误:\n') + errorText;
+                        if (outputContent) {
+                            outputContent.textContent = fullOutput;
+                        } else {
+                            outputDiv.textContent = fullOutput;
+                        }
+                        outputDiv.scrollTop = outputDiv.scrollHeight;
+                        button.disabled = false;
+                        button.textContent = '重新运行';
+                        clearInterval(interval);
+                    }
+                } catch (error) {
+                    console.error('获取任务状态失败:', error);
+                }
+            }, 500);  // 更快的轮询频率 (500ms)
+        }
+
+        // 启用下一个任务
+        function enableNextTask(nextTaskId) {
+            const nextCard = document.getElementById(`card-${nextTaskId}`);
+            if (nextCard) {
+                nextCard.style.border = '3px solid #4caf50';
+                nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                setTimeout(() => {
+                    if (confirm(`任务完成！是否运行下一个任务: ${nextTaskId}?`)) {
+                        const button = nextCard.querySelector('.task-button');
+                        button.click();
+                    }
+                }, 500);
+            }
+        }
+
+        // 查看配置
+        async function showConfig() {
+            const response = await fetch('/api/config');
+            const config = await response.json();
+            alert('当前配置:\n\n' + JSON.stringify(config, null, 2));
+        }
+
+        // 切换参数编辑模式
+        function toggleEditParams(taskId) {
+            const displayDiv = document.getElementById(`params-display-${taskId}`);
+            const editDiv = document.getElementById(`params-edit-${taskId}`);
+            
+            if (editDiv.style.display === 'none') {
+                displayDiv.style.display = 'none';
+                editDiv.style.display = 'block';
+            } else {
+                displayDiv.style.display = 'block';
+                editDiv.style.display = 'none';
+            }
+        }
+
+        // 保存参数修改
+        function saveParams(taskId) {
+            const editDiv = document.getElementById(`params-edit-${taskId}`);
+            const inputs = editDiv.querySelectorAll('.param-edit-input');
+            const newParams = {};
+            
+            inputs.forEach(input => {
+                const key = input.getAttribute('data-param-key');
+                const value = input.value;
+                newParams[key] = value;
+            });
+            
+            // 更新按钮的 data-params 属性
+            const button = document.querySelector(`[data-task-id="${taskId}"]`);
+            button.setAttribute('data-params', JSON.stringify(newParams));
+            
+            // 更新显示
+            const displayDiv = document.getElementById(`params-display-${taskId}`);
+            displayDiv.innerHTML = Object.entries(newParams)
+                .map(([k, v]) => `${k}: ${v}<br>`)
+                .join('');
+            
+            // 切换回显示模式
+            toggleEditParams(taskId);
+            
+            console.log(`任务 ${taskId} 参数已更新:`, newParams);
+            alert('参数已更新！点击"运行任务"按钮将使用新参数。');
+        }
+
+        // 页面加载时初始化
+        window.onload = () => {
+            loadSharedParams();
+        };
+    </script>
+</body>
+</html>

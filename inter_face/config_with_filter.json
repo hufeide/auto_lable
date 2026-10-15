@@ -1,0 +1,49 @@
+{
+  "shared_params": {
+    "exam_id": "475",
+    "subject_id": "2119",
+    "question_num": "24",
+    "output_directory": "/home/aixz/data/hxf/data/label_studio_data/result/image_20251120",
+    "api_url": "http://192.168.1.210:9009/v1/chat/completions",
+    "storage_title": "recoginse_20251120",
+    "LS_URL": "http://localhost:5002"
+  },
+  "tasks": [
+    {
+      "id": "task1",
+      "name": "Step1: 错误数据查询",
+      "script": "/home/aixz/data/hxf/ai_check/lablestudio/utility/export_sql_step1.py",
+      "script_type": "python",
+      "params": {},
+      "use_shared_params": ["exam_id", "subject_id", "question_num"],
+      "next_task": "task2"
+    },
+    {
+      "id": "task2",
+      "name": "Step2: qwen3vl推理",
+      "script": "/home/aixz/data/hxf/ai_check/lablestudio/utility/infer_step2.py",
+      "script_type": "python",
+      "params": {},
+      "use_shared_params": ["output_directory", "api_url"],
+      "next_task": "task3"
+    },
+    {
+      "id": "task3",
+      "name": "Step3: label_studio库生成",
+      "script": "/home/aixz/data/hxf/ai_check/lablestudio/utility/insert_labels_step3.py",
+      "script_type": "python",
+      "params": {},
+      "use_shared_params": ["storage_title", "output_directory", "LS_URL"],
+      "next_task": "task4"
+    },
+    {
+      "id": "task4",
+      "name": "Step4: 数据导出",
+      "script": "/home/aixz/data/hxf/ai_check/lablestudio/utility/export_labels_step4.py",
+      "script_type": "python",
+      "params": {},
+      "use_shared_params": ["storage_title", "LS_URL"],
+      "next_task": null
+    }
+  ]
+}

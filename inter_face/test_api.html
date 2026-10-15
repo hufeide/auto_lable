@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>API 测试页面</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        button { padding: 10px 20px; margin: 10px; font-size: 16px; }
+        .output { background: #f0f0f0; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        pre { background: #263238; color: #aed581; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>API 测试页面</h1>
+    
+    <h2>1. 测试运行任务</h2>
+    <button onclick="testRunTask()">运行测试任务</button>
+    <div class="output" id="run-output"></div>
+    
+    <h2>2. 测试获取状态</h2>
+    <button onclick="testGetStatus()">获取任务状态</button>
+    <div class="output" id="status-output"></div>
+    
+    <h2>3. 测试共享参数</h2>
+    <button onclick="testSharedParams()">设置共享参数</button>
+    <button onclick="testGetSharedParams()">获取共享参数</button>
+    <div class="output" id="params-output"></div>
+
+    <script>
+        async function testRunTask() {
+            const output = document.getElementById('run-output');
+            output.innerHTML = '发送请求...';
+            
+            try {
+                const response = await fetch('/api/run_task', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        task_id: 'test1',
+                        script: 'test_script1.py',
+                        params: {
+                            exam_id: '123',
+                            subject_id: '456',
+                            question_num: '1',
+                            output_directory: '/tmp/test'
+                        },
+                        script_type: 'python'
+                    })
+                });
+                
+                const result = await response.json();
+                output.innerHTML = '<pre>' + JSON.stringify(result, null, 2) + '</pre>';
+                
+                if (result.success) {
+                    output.innerHTML += '<p style="color: green;">✓ 任务启动成功！</p>';
+                }
+            } catch (error) {
+                output.innerHTML = '<p style="color: red;">✗ 错误: ' + error.message + '</p>';
+            }
+        }
+        
+        async function testGetStatus() {
+            const output = document.getElementById('status-output');
+            output.innerHTML = '获取状态...';
+            
+            try {
+                const response = await fetch('/api/task_status/test1');
+                const result = await response.json();
+                output.innerHTML = '<pre>' + JSON.stringify(result, null, 2) + '</pre>';
+            } catch (error) {
+                output.innerHTML = '<p style="color: red;">✗ 错误: ' + error.message + '</p>';
+            }
+        }
+        
+        async function testSharedParams() {
+            const output = document.getElementById('params-output');
+            output.innerHTML = '设置参数...';
+            
+            try {
+                const response = await fetch('/api/shared_params', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        test_param: 'test_value',
+                        another_param: '123'
+                    })
+                });
+                
+                const result = await response.json();
+                output.innerHTML = '<pre>' + JSON.stringify(result, null, 2) + '</pre>';
+                output.innerHTML += '<p style="color: green;">✓ 参数设置成功！</p>';
+            } catch (error) {
+                output.innerHTML = '<p style="color: red;">✗ 错误: ' + error.message + '</p>';
+            }
+        }
+        
+        async function testGetSharedParams() {
+            const output = document.getElementById('params-output');
+            output.innerHTML = '获取参数...';
+            
+            try {
+                const response = await fetch('/api/shared_params');
+                const result = await response.json();
+                output.innerHTML = '<pre>' + JSON.stringify(result, null, 2) + '</pre>';
+            } catch (error) {
+                output.innerHTML = '<p style="color: red;">✗ 错误: ' + error.message + '</p>';
+            }
+        }
+    </script>
+</body>
+</html>

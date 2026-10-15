@@ -1,0 +1,50 @@
+{
+  "tasks": [
+    {
+      "id": "task1",
+      "name": "错误数据查询",
+      "script": "/home/aixz/data/hxf/ai_check/lablestudio/utility/export_sql_step1.py",
+      "script_type": "python",
+      "params": {
+        "exam_id": "475",
+        "subject_id": "2119",
+        "question_num": "24",
+        "output_directory": "/home/aixz/data/hxf/data/label_studio_data/result/image_20251120"
+      },
+      "next_task": "task2"
+    },
+    {
+      "id": "task2",
+      "name": "qwen3vl推理",
+      "script": "/home/aixz/data/hxf/ai_check/lablestudio/utility/infer_step2.py",
+      "script_type": "python",
+      "params": {
+        "api_url": "http://192.168.1.210:9009/v1/chat/completions",
+        "output_directory": "/home/aixz/data/hxf/data/label_studio_data/result/image_20251120"
+      },
+      "next_task": "task3"
+    },
+    {
+      "id": "task3",
+      "name": "label_studio库生成",
+      "script": "/home/aixz/data/hxf/ai_check/lablestudio/utility/insert_labels_step3.py",
+      "script_type": "python",
+      "params": {
+        "storage_title": "recoginse_20251120"
+      },
+      "next_task": "task4"
+    },
+    {
+      "id": "task4",
+      "name": "数据导出",
+      "script": "/home/aixz/data/hxf/ai_check/lablestudio/utility/export_labels_step4.py",
+      "script_type": "python",
+      "params": {
+        "storage_title": "recoginse_20251120",
+        "LS_URL": "http://localhost:5002",
+        "output_label_dir": "/home/aixz/data/hxf/data/label_studio_data/result/image_20251120/label"
+      },
+      "next_task": null
+    }
+  ]
+}

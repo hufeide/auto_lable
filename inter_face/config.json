@@ -1,0 +1,142 @@
+{
+  "shared_params": {
+    "Base_dir": "/home/aixz/data/hxf/data/label_studio_data/2025-11-31/model",
+    "Base_model": "/home/aixz/data/hxf/bigmodel/my_latex_qwen2.5vl/output_Qwen3vl/20251115/merged_qwen3vl_1115_2/",
+    "Dataset_dir": "/home/aixz/data/hxf/data/label_studio_data/2025-12-31/500_1_1/qwen3vl_add_begin.jsonl",
+    "LS_URL": "http://localhost:5002",
+    "TODAY_COMPACT": "2026-01-01",
+    "api_url": "http://192.168.1.210:9009/v1/chat/completions",
+    "exam_id": "500",
+    "question_num": "1",
+    "subject_id": "1"
+  },
+  "tasks": [
+    {
+      "id": "task1",
+      "name": "Step1: 错误数据查询",
+      "next_task": "task2",
+      "params": {
+        "exam_id": "500",
+        "question_num": "1",
+        "subject_id": "1"
+      },
+      "script": "/home/aixz/data/hxf/ai_check/lablestudio/utility/export_sql_step1.py",
+      "script_type": "python",
+      "use_shared_params": [
+        "exam_id",
+        "subject_id",
+        "question_num"
+      ]
+    },
+    {
+      "id": "task2",
+      "name": "Step2: qwen3vl推理",
+      "next_task": "task3",
+      "params": {
+        "api_url": "http://192.168.1.210:9009/v1/chat/completions",
+        "exam_id": "500",
+        "question_num": "1",
+        "subject_id": "1"
+      },
+      "script": "/home/aixz/data/hxf/ai_check/lablestudio/utility/infer_step2.py",
+      "script_type": "python",
+      "use_shared_params": [
+        "exam_id",
+        "subject_id",
+        "question_num",
+        "api_url"
+      ]
+    },
+    {
+      "id": "task3",
+      "name": "Step3: label_studio库生成",
+      "next_task": "task4",
+      "params": {
+        "LS_URL": "http://localhost:5002",
+        "exam_id": "500",
+        "question_num": "1",
+        "subject_id": "1"
+      },
+      "script": "/home/aixz/data/hxf/ai_check/lablestudio/utility/insert_labels_step3.py",
+      "script_type": "python",
+      "use_shared_params": [
+        "exam_id",
+        "subject_id",
+        "question_num",
+        "LS_URL"
+      ]
+    },
+    {
+      "id": "task4",
+      "name": "Step4: 数据导出",
+      "next_task": "task5",
+      "params": {
+        "LS_URL": "http://localhost:5002",
+        "exam_id": "500",
+        "question_num": "1",
+        "subject_id": "1"
+      },
+      "script": "/home/aixz/data/hxf/ai_check/lablestudio/utility/export_labels_step4.py",
+      "script_type": "python",
+      "use_shared_params": [
+        "exam_id",
+        "subject_id",
+        "question_num",
+        "LS_URL"
+      ]
+    },
+    {
+      "id": "task5",
+      "name": "Step5: 训练数据导出",
+      "next_task": "task6",
+      "params": {
+        "exam_id": "500",
+        "question_num": "1",
+        "subject_id": "1"
+      },
+      "script": "/home/aixz/data/hxf/ai_check/lablestudio/utility/compose_qwen3_org_step5.py",
+      "script_type": "python",
+      "use_shared_params": [
+        "exam_id",
+        "subject_id",
+        "question_num"
+      ]
+    },
+    {
+      "id": "task6",
+      "name": "Step6: 模型微调",
+      "next_task": "task7",
+      "params": {
+        "Base_dir": "/home/aixz/data/hxf/data/label_studio_data/2025-11-31/model",
+        "Base_model": "/home/aixz/data/hxf/bigmodel/my_latex_qwen2.5vl/output_Qwen3vl/20251115/merged_qwen3vl_1115_2/",
+        "Dataset_dir": "/home/aixz/data/hxf/data/label_studio_data/2025-11-23/475_2119_24/qwen3vl_add_begin.jsonl"
+      },
+      "script": "/home/aixz/data/hxf/ai_check/lablestudio/utility/train_step6.sh",
+      "script_type": "bash",
+      "use_shared_params": [
+        "Base_model",
+        "Dataset_dir",
+        "Base_dir"
+      ]
+    },
+    {
+      "id": "task7",
+      "name": "Step7: 模型评估",
+      "next_task": null,
+      "params": {
+        "Dataset_dir": "/home/aixz/data/hxf/data/label_studio_data/2025-11-23/475_2119_24/qwen3vl_add_begin.jsonl",
+        "exam_id": "500",
+        "question_num": "1",
+        "subject_id": "1"
+      },
+      "script": "/home/aixz/data/hxf/ai_check/lablestudio/utility/eval_result_step7.py",
+      "script_type": "python",
+      "use_shared_params": [
+        "exam_id",
+        "subject_id",
+        "question_num",
+        "Dataset_dir"
+      ]
+    }
+  ]
+}
